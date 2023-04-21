@@ -7,14 +7,17 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     private GridPosition _gridPosition;
-    private Vector3 targetPosition;
-    private bool isMoving;
-    
-    [SerializeField] private Animator unitAnimation;
-    [SerializeField] private float turnSpeed = 7.5f;
+    private MoveAction _moveAction;
+    private SpinAction _spinAction;
+    private BaseAction[] _baseActionArray;
+    private int _actionPoints = 2;
 
-    public float moveSpeed = 4f;
-    public float movementMargin = 0.025f;
+    private void Awake()
+    {
+        _moveAction = GetComponent<MoveAction>();
+        _spinAction = GetComponent<SpinAction>();
+        _baseActionArray = GetComponents<BaseAction>();
+    }
 
     private void Start()
     {
@@ -24,21 +27,6 @@ public class Unit : MonoBehaviour
 
     private void Update()
     {
-        if (isMoving)
-        {
-            Vector3 moveDirection = (targetPosition - transform.position).normalized;
-            transform.position += moveDirection * moveSpeed * Time.deltaTime;
-
-            transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * turnSpeed);
-
-            if (Vector3.Distance(targetPosition, transform.position) < movementMargin)
-            {
-                unitAnimation.SetBool("isWalking", false);
-                isMoving = false;
-
-            }
-            
-        }
         GridPosition newGridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
         if (newGridPosition != _gridPosition)
         {
@@ -48,10 +36,58 @@ public class Unit : MonoBehaviour
         }
     }
 
-    public void Move(Vector3 targetPosition)
+    public MoveAction GetMoveAction()
     {
-        this.targetPosition = targetPosition;
-        unitAnimation.SetBool("isWalking", true);
-        isMoving = true;
+        return _moveAction;
+    }
+
+    public SpinAction GetSpinAction()
+    {
+        return _spinAction;
+    }
+
+    public GridPosition GetGridPosition()
+    {
+        return _gridPosition;
+    }
+
+    public BaseAction[] GetBaseActions()
+    {
+        return _baseActionArray;
+    }
+
+    public int GetActionPoints()
+    {
+        return _actionPoints;
+    }
+
+    public bool TrySpendActionPointsToTakeAction(BaseAction baseAction)
+    {
+        if (CanSpendActionPointsToTakeAction(baseAction))
+        {
+            SpendActionPoints(baseAction.GetActionPointsCost());
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool CanSpendActionPointsToTakeAction(BaseAction baseAction)
+    {
+        if (_actionPoints >= baseAction.GetActionPointsCost())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private void SpendActionPoints(int amount)
+    {
+        _actionPoints -= amount;
     }
 }

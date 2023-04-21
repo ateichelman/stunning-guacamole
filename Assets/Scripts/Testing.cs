@@ -8,6 +8,8 @@ public class Testing : MonoBehaviour
     private GridSystem _gridSystem;
 
     [SerializeField] private Transform gridDebugObjectPrefab;
+
+    [SerializeField] private Unit _unit;
     
     // Start is called before the first frame update
     void Start()
@@ -20,6 +22,8 @@ public class Testing : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(_gridSystem.GetGridPosition(MouseWorld.GetPosition()));
+        GridSystemVisual.Instance.HideAllGridPositions();
+        List<GridPosition> validPositions = _unit.GetMoveAction().GetValidActionGridPositionList();
+        GridSystemVisual.Instance.ShowGridPositions(validPositions);
     }
 }
